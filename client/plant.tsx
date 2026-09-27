@@ -29,8 +29,8 @@ export default function Plant({ planting, selection }: Readonly<{ planting: Inst
                 <Heading level={1} size="large">{heading}</Heading>
                 <Text tone="secondary">{lede}</Text>
             </Flex>
-            {/* The catalog sits on its own flat Surface, scrolling within its corners. */}
-            <Surface depth="flat" material="extended" color="default" className="plant-catalog">
+            {/* The catalog sits recessed into Sprout, scrolling within its corners. */}
+            <Surface depth="recessed" className="plant-catalog">
                 {/* The catalog shows once it and every icon have arrived, so no card fills in after the others. */}
                 <Loading>
                     <Arrived arrived={catalog.releases !== undefined || catalog.error !== undefined} />
@@ -110,7 +110,7 @@ function Choosing({ releases, selection: { chosen: selection, select } }: Readon
 
     return <ScrollArea className="plant-list">
         {/* The space around the content scrolls with it, so the scrollbar stays at the Surface's edge. */}
-        <GridList aria-label="Programs" selectionMode="multiple" itemWidth="15em" style={{ padding: "1.25em" }} value={[...selection]}
+        <GridList aria-label="Programs" selectionMode="multiple" color="default" itemWidth="15em" style={{ padding: "1.25em" }} value={[...selection]}
             onChange={value => select(value === "all" ? releases.map(release => release.identity) : value)}>
             {sections(releases).map(({ category, members }) => {
                 const identities = members.map(member => member.identity)

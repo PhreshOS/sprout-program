@@ -1,29 +1,30 @@
 import { useClientMemory, useDesktop, useDesktopPreferences } from "@phreshos/react"
 import { Button, Flex, Heading, Link, SegmentedControl, Select, Text, usePreferences, useReadiness, useRequirement } from "@phreshos/react-ui"
 import { useEffect, useRef, useState, type ReactNode } from "react"
-import { Farewell, FinishContext, useFinish, type Finish } from "./leave"
+import { Farewell, FinishContext, useFarewellFont, useFinish, type Finish } from "./leave"
 import Plant, { usePlanting, useSelection } from "./plant"
 import { usePlacement } from "./placement"
 import { drawScene, sceneDuration } from "./scene"
 
-type Step = "welcome" | "personalize" | "plant" | "farewell"
+export type Step = "welcome" | "personalize" | "plant" | "farewell"
 
 /**
  * Sprout's steps. The current step lives in Client memory, so a reload or the
  * same Sprout opened from another Desktop continues where it is, while a new
- * run starts again from the welcome.
+ * run starts again from the welcome. It is read by the page, which opens
+ * according to it, and passed here.
  */
-export default function Sprout() {
+export default function Sprout({ step: [stored, setStep] }: Readonly<{ step: ReturnType<typeof useClientMemory<Step>> }>) {
     const leave = usePlacement()
     // Once the owner ends Sprout, its farewell takes the place of every step.
     const [ending, setEnding] = useState<Finish>()
-    const [stored, setStep] = useClientMemory<Step>("step", "welcome")
     const step = stored as Step | undefined
     // Everything the steps open with is read here, once, so moving between steps never waits again.
     const theme = useClientMemory("theme", "system")
     const selection = useSelection()
     const planting = usePlanting()
-    useRequirement(step !== undefined && theme[0] !== undefined && selection.loaded && planting !== undefined)
+    const font = useFarewellFont()
+    useRequirement(step !== undefined && theme[0] !== undefined && selection.loaded && planting !== undefined && font)
     // During development every reload starts from the welcome, so it can be reviewed again.
     const [begun, setBegun] = useState(false)
     // Nothing starts before Sprout has opened, so the welcome's scene plays in front of the owner.

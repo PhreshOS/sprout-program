@@ -21,6 +21,25 @@ export function useFinish() {
     return begin
 }
 
+/**
+ * Whether the farewell's display font has arrived. Sprout waits for it while
+ * opening, so the last words never appear in a fallback font first. A font
+ * that fails to load does not hold Sprout: the words fall back to Georgia.
+ */
+export function useFarewellFont() {
+    const [arrived, setArrived] = useState(false)
+
+    useEffect(() => {
+        let current = true
+        const arrive = () => { if (current) setArrived(true) }
+        // Only the files covering the farewell's own characters are fetched.
+        document.fonts.load(`1em "Fraunces Variable"`, Object.values(farewell).join("")).then(arrive, arrive)
+        return () => { current = false }
+    }, [])
+
+    return arrived
+}
+
 /** How long the words hold before they fade, in milliseconds. */
 const holding = 2400
 

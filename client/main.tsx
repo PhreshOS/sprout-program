@@ -1,9 +1,9 @@
-import { ContextProvider, DesktopProvider, SystemProvider, useDesktopPreferences, useSystemAppearance } from "@phreshos/react"
+import { ContextProvider, DesktopProvider, SystemProvider, useClientMemory, useDesktopPreferences, useSystemAppearance } from "@phreshos/react"
 import { context, desktop, system } from "@phreshos/client"
 import { ProgressBar, Readiness, resolveRadius, UIProvider, useAppearance, usePreferences, useThemedValue } from "@phreshos/react-ui"
 import { StrictMode, useLayoutEffect } from "react"
 import client from "react-dom/client"
-import Sprout from "./sprout"
+import Sprout, { type Step } from "./sprout"
 import "./style.css"
 
 client.createRoot(document.getElementById("sprout")!).render(<StrictMode>
@@ -43,15 +43,19 @@ function Page() {
     }, [appearance.radius])
 
     const { animations } = usePreferences()
+    const step = useClientMemory<Step>("step", "welcome")
+    // During development every reload plays the welcome again, as Sprout does.
+    const welcoming = import.meta.env.DEV || step[0] === "welcome"
 
-    // One opening: Sprout shows once the state it opens with has arrived from the System, and a moment
-    // after that, so the welcome never starts before the owner is looking. Without motion, no moment.
+    // One opening: Sprout shows once the state it opens with has arrived from the System. Before the
+    // welcome it waits a moment more, so the welcome's scene never starts before the owner is looking;
+    // once the welcome is behind, or without motion, it opens at once.
     return <div className="page" style={{ color: foreground }}>
-        <Readiness delay={animations ? opening : 0} status={({ ready }) => ready ? null : <Opening />}><Sprout /></Readiness>
+        <Readiness delay={animations && welcoming ? opening : 0} status={({ ready }) => ready ? null : <Opening />}><Sprout step={step} /></Readiness>
     </div>
 }
 
-/** The moment Sprout waits after its state has arrived, in milliseconds. */
+/** The moment Sprout waits before the welcome, after its state has arrived, in milliseconds. */
 const opening = 1500
 
 /** A moving bar while Sprout opens. It measures nothing, so it shows no value. */
