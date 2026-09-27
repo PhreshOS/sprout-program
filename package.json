@@ -1,0 +1,50 @@
+{
+    "name": "sprout-program",
+    "private": true,
+    "version": "0.1.0",
+    "description": "The first welcome to PhreshOS: plant your first programs, or keep it fresh.",
+    "type": "module",
+    "scripts": {
+        "check": "tsc --noEmit -p .",
+        "build": "vite-node scripts/build.ts",
+        "dev": "phresh dev",
+        "start": "phresh start",
+        "pack": "phresh pack",
+        "verify": "bun run check && bun run build && bun run test",
+        "test": "vitest run --project default"
+    },
+    "keywords": [
+        "phreshos",
+        "program",
+        "welcome"
+    ],
+    "dependencies": {
+        "@fontsource-variable/fraunces": "^5.3.0",
+        "@phreshos/client": "^0.1.50",
+        "@phreshos/core": "^0.1.59",
+        "@phreshos/react": "^0.1.31",
+        "@phreshos/react-ui": "^0.1.42",
+        "@phreshos/server": "^0.1.57",
+        "adm-zip": "^0.6.0",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "@phreshos/cli": "^0.1.73",
+        "@types/adm-zip": "^0.5.8",
+        "@types/node": "^26.4.0",
+        "@types/react": "^19.2.18",
+        "@types/react-dom": "^19.2.5",
+        "@vitejs/plugin-react": "^6.1.1",
+        "typescript": "^7.0.2",
+        "vite": "^8.2.2",
+        "vite-node": "^6.0.0",
+        "vitest": "^4.1.10"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/PhreshOS/sprout-program.git"
+    },
+    "license": "MIT"
+}

@@ -1,0 +1,253 @@
+/* The display font PhreshOS speaks in, bundled with Sprout so it needs no network. */
+@import "@fontsource-variable/fraunces/full.css";
+
+html,
+body,
+#sprout,
+.page,
+.step-transition {
+    height: 100%;
+    margin: 0;
+    background: transparent;
+}
+
+/* Sprout owns its shape: parts that arrive from below never reach past it and add a scrollbar. */
+.page {
+    position: relative;
+    overflow: clip;
+}
+
+/* The page clips everything inside it to its rounded corners, fixed overlays included:
+   paint containment makes it their containing block. The radius is set from the Appearance. */
+body {
+    overflow: clip;
+    contain: paint;
+}
+
+:root {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.welcome {
+    position: relative;
+    height: 100%;
+    text-align: center;
+}
+
+/* The scene fills the window while it plays, so the sprout grows in its middle. */
+.welcome-scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Once grown, the drawing rises and eases a little smaller to leave the words room; only the finished canvas moves. */
+.welcome[data-played="true"] .welcome-scene {
+    translate: 0 -22%;
+    scale: 0.85;
+}
+
+.welcome-words {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 12%;
+}
+
+/* The words arrive under the risen sprout: the heading and its sentence, then the actions. */
+.welcome-words > * {
+    opacity: 0;
+    translate: 0 14px;
+}
+
+.welcome[data-played="true"] .welcome-words > * {
+    opacity: 1;
+    translate: 0 0;
+}
+
+.welcome[data-motion="true"] .welcome-scene {
+    transition: translate 1000ms cubic-bezier(0.22, 1, 0.36, 1), scale 1000ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.welcome[data-motion="true"] .welcome-words > * {
+    transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1) 350ms, translate 700ms cubic-bezier(0.22, 1, 0.36, 1) 350ms;
+}
+
+.welcome[data-motion="true"] .welcome-words > :nth-child(2) {
+    transition-delay: 570ms;
+}
+
+.preparing {
+    display: grid;
+    place-items: center;
+    height: 100%;
+}
+
+.preparing-bar {
+    width: 36%;
+}
+
+.step {
+    display: grid;
+    /* One row of the full height, so a step's own height can be a share of it. */
+    grid-template-rows: minmax(0, 1fr);
+    place-items: center;
+    height: 100%;
+    text-align: center;
+}
+
+.step-content {
+    width: min(26rem, 80%);
+}
+
+/* Fields read left to right like a form, inside the centered step. */
+.step-fields {
+    width: 100%;
+    text-align: start;
+}
+
+/* Between steps: the current step fades and lifts away as one. */
+.step-transition[data-motion="true"] {
+    transition: opacity 420ms ease-in, translate 420ms ease-in;
+}
+
+.step-transition[data-leaving="true"] {
+    opacity: 0;
+    translate: 0 -16px;
+}
+
+/* The next step arrives part by part: its heading, its fields, then its actions. */
+@keyframes step-arrive {
+    from {
+        opacity: 0;
+        translate: 0 18px;
+    }
+}
+
+.step-transition[data-motion="true"] .step-content > * {
+    animation: step-arrive 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.step-transition[data-motion="true"] .step-content > :nth-child(2) {
+    animation-delay: 110ms;
+}
+
+.step-transition[data-motion="true"] .step-content > :nth-child(3) {
+    animation-delay: 220ms;
+}
+
+/* The catalog step: its heading, the catalog taking what is left, then a thin bar of actions. */
+.step-content.plant {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 1.5em;
+    width: 94%;
+    height: 94%;
+    align-self: end;
+    /* The same space below the actions as between the heading, the catalog, and the actions. */
+    padding-bottom: 1.5em;
+    box-sizing: border-box;
+}
+
+.plant-catalog {
+    min-height: 0;
+    /* A little room around the scroll area, so its scrollbar does not touch the Surface's edge. */
+    padding: 0.4em;
+    box-sizing: border-box;
+    overflow: clip;
+}
+
+.plant-list {
+    height: 100%;
+    text-align: start;
+}
+
+.plant-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0.75em;
+    padding-inline-end: 1.25em;
+}
+
+.plant-icon {
+    width: 2.25em;
+    height: 2.25em;
+    object-fit: contain;
+}
+
+.plant-name {
+    display: block;
+    font-weight: 600;
+}
+
+/* A section's name reads as a heading over its cards, larger than the collection header default. */
+.plant-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-size: 1.3em;
+}
+
+.plant-category svg {
+    width: 1.15em;
+    height: 1.15em;
+}
+
+/* The actions sit in from the sides, level with the catalog's content rather than its edge. */
+.plant-actions {
+    padding-inline: 1.5em;
+}
+
+/* A card's state sits at its bottom end, below what it says, whatever the card's height. */
+.planting-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    height: 100%;
+}
+
+.planting-status {
+    align-self: flex-end;
+    margin-top: auto;
+}
+
+.planting-error {
+    display: block;
+    margin-top: 0.25em;
+}
+
+.plant-unavailable {
+    height: 100%;
+    padding: 2em;
+    text-align: center;
+}
+
+/* The farewell: a few words in the display font PhreshOS speaks in, fading in, holding, then fading away. */
+.farewell {
+    display: grid;
+    place-items: center;
+    height: 100%;
+}
+
+.farewell-words {
+    margin: 0;
+    font-family: "Fraunces Variable", Georgia, serif;
+    font-variation-settings: "SOFT" 100, "opsz" 144;
+    font-size: 2.6em;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+}
+
+.farewell[data-motion="true"] .farewell-words {
+    /* The arrival lets go of the words once it ends, so their fade can run as a transition. */
+    animation: step-arrive 900ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    transition: opacity var(--departure), translate var(--departure), filter var(--departure);
+}
+
+/* The words go quietly: they fade, drift up a little, and soften. */
+.farewell[data-fading="true"] .farewell-words {
+    opacity: 0;
+    translate: 0 -6px;
+    filter: blur(2px);
+}

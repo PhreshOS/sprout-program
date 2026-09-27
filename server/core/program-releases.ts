@@ -1,0 +1,281 @@
+import { z } from "zod"
+
+const stableVersion = /^\d+\.\d+\.\d+$/
+
+const asset = z.object({
+    name: z.string(),
+    browser_download_url: z.string().url()
+}).passthrough()
+
+const release = z.object({
+    draft: z.boolean(),
+    prerelease: z.boolean(),
+    tag_name: z.string(),
+    assets: z.array(asset)
+}).passthrough()
+
+const releaseList = z.array(release)
+
+const repositoryList = z.array(z.object({
+    name: z.string(),
+    archived: z.boolean(),
+    fork: z.boolean()
+}).passthrough())
+
+const programDeclaration = z.object({
+    identity: z.string().trim().min(1).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    version: z.string().regex(stableVersion),
+    name: z.string().trim().min(1).max(100).optional(),
+    description: z.string().trim().min(1).max(500).optional(),
+    icon: z.literal("icon.png").optional(),
+    categories: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
+    keywords: z.array(z.string().trim().min(1).max(50)).max(50).optional(),
+    website: z.string().url().optional()
+}).passthrough()
+
+export type ProgramRelease = Readonly<{
+    identity: string
+    version: string
+    name: string
+    description: string
+    icon: string | null
+    categories: readonly string[]
+    keywords: readonly string[]
+    website: string | null
+    archive: string
+    checksum: string
+}>
+
+type ProgramReleaseCandidate = Readonly<{
+    identity: string
+    version: string
+    program: string
+    icon: string | null
+    archive: string
+    checksum: string
+}>
+
+export type ProgramReleasePage = Readonly<{
+    releases: readonly ProgramRelease[]
+    page: number
+    nextPage: number | null
+}>
+
+type Fetcher = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
+
+/** Resolves complete stable official Program releases from GitHub. */
+export default class ProgramReleases {
+    private state: CatalogState | undefined
+    private loading: Promise<readonly ProgramRelease[]> | undefined
+
+    public constructor(private readonly fetcher: Fetcher = fetch) {}
+
+    public async latest(identity: string): Promise<ProgramRelease> {
+        const selected = (await this.catalog()).find(release => release.identity === identity)
+
+        if (!selected) throw new Error(`No stable ${identity} Program release is available`)
+
+        return selected
+    }
+
+    public all() {
+        return this.catalog()
+    }
+
+    public async list(page: number, limit: number, retry = false): Promise<ProgramReleasePage> {
+        if (retry && this.state?.status === "rejected") this.state = undefined
+
+        const catalog = await this.catalog()
+        const start = (page - 1) * limit
+        const releases = catalog.slice(start, start + limit)
+
+        return Object.freeze({
+            releases: Object.freeze(releases),
+            page,
+            nextPage: start + limit < catalog.length ? page + 1 : null
+        })
+    }
+
+    /** Shares and retains the first settled GitHub load for this Server run. */
+    private async catalog(): Promise<readonly ProgramRelease[]> {
+        if (this.state?.status === "fulfilled") return this.state.catalog
+        if (this.state?.status === "rejected") throw this.state.error
+
+        const loading = this.loading ??= this.readCatalog()
+
+        try {
+            const catalog = await loading
+
+            this.state = { status: "fulfilled", catalog }
+
+            return catalog
+        } catch (exception) {
+            const error = exception instanceof Error ? exception : new Error(String(exception))
+
+            this.state = { status: "rejected", error }
+
+            throw error
+        } finally {
+            if (this.loading === loading) this.loading = undefined
+        }
+    }
+
+    private async readCatalog(): Promise<readonly ProgramRelease[]> {
+        const identities = new Set<string>()
+
+        for (let page = 1; page <= maximumRepositoryPages; page++) {
+            const repositories = await this.readRepositories(page)
+
+            for (const repository of repositories) {
+                if (!repository.archived && !repository.fork && repository.name.endsWith("-program")) {
+                    const identity = repository.name.slice(0, -"-program".length)
+
+                    if (!installers.has(identity)) identities.add(identity)
+                }
+            }
+
+            if (repositories.length < repositoryPageSize) {
+                const releases = (await Promise.all([...identities].map(identity => this.resolve(identity))))
+                    .filter((value): value is ProgramRelease => value !== null)
+                    .sort((left, right) => left.identity.localeCompare(right.identity))
+
+                return Object.freeze(releases)
+            }
+        }
+
+        throw new Error("The official Program catalog exceeds the safe repository limit")
+    }
+
+    private async readRepositories(page: number) {
+        const response = await this.fetcher(
+            `https://api.github.com/orgs/PhreshOS/repos?type=public&sort=full_name&per_page=${repositoryPageSize}&page=${page}`,
+            { headers: githubHeaders }
+        )
+
+        if (!response.ok) {
+            throw unavailable("The official Program catalog", response)
+        }
+
+        return repositoryList.parse(await response.json())
+    }
+
+    private async resolve(identity: string): Promise<ProgramRelease | null> {
+        const response = await this.fetcher(
+            `https://api.github.com/repos/PhreshOS/${identity}-program/releases?per_page=100`,
+            { headers: githubHeaders }
+        )
+
+        if (!response.ok) {
+            throw unavailable(`The ${identity} Program release list`, response)
+        }
+
+        const candidates = releaseList.parse(await response.json())
+            .flatMap(value => candidate(identity, value))
+            .sort((left, right) => compare(right.version, left.version))
+
+        const selected = candidates[0]
+
+        return selected ? await this.describe(selected) : null
+    }
+
+    private async describe(candidate: ProgramReleaseCandidate): Promise<ProgramRelease> {
+        const response = await this.fetcher(candidate.program, { headers: githubHeaders })
+
+        if (!response.ok) {
+            throw unavailable(`The ${candidate.identity} Program definition`, response)
+        }
+
+        const program = programDeclaration.parse(await response.json())
+
+        if (program.identity !== candidate.identity || program.version !== candidate.version) {
+            throw new Error(`The ${candidate.identity} Program definition does not match its release`)
+        }
+
+        if (program.icon && !candidate.icon) throw new Error(`The ${candidate.identity} Program release is missing its declared icon`)
+
+        return Object.freeze({
+            identity: candidate.identity,
+            version: candidate.version,
+            name: program.name ?? candidate.identity,
+            description: program.description ?? "",
+            icon: program.icon ? candidate.icon : null,
+            categories: Object.freeze([...(program.categories ?? [])]),
+            keywords: Object.freeze([...(program.keywords ?? [])]),
+            website: program.website ?? null,
+            archive: candidate.archive,
+            checksum: candidate.checksum
+        })
+    }
+}
+
+type CatalogState =
+    | Readonly<{ status: "fulfilled", catalog: readonly ProgramRelease[] }>
+    | Readonly<{ status: "rejected", error: Error }>
+
+const repositoryPageSize = 100
+const maximumRepositoryPages = 1_000
+/** The first-run Programs are not offered: they install the others. */
+const installers = new Set(["setup", "sprout"])
+
+const githubHeaders = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "PhreshOS-Sprout",
+    "X-GitHub-Api-Version": "2022-11-28"
+} as const
+
+function candidate(identity: string, value: z.infer<typeof release>): ProgramReleaseCandidate[] {
+    if (value.draft || value.prerelease) return []
+
+    const prefix = `${identity}@`
+    const archive = value.assets.find(item => item.name.startsWith(prefix) && item.name.endsWith(".zip"))
+
+    if (!archive) return []
+
+    const version = archive.name.slice(prefix.length, -".zip".length)
+
+    if (!stableVersion.test(version) || value.tag_name !== `v${version}`) return []
+
+    const checksum = value.assets.find(item => item.name === `${archive.name}.sha256`)
+    const program = value.assets.find(item => item.name === "program.json")
+    const icon = value.assets.find(item => item.name === "icon.png")
+
+    if (!checksum || !program) return []
+
+    return [{
+        identity,
+        version,
+        program: program.browser_download_url,
+        icon: icon?.browser_download_url ?? null,
+        archive: archive.browser_download_url,
+        checksum: checksum.browser_download_url
+    }]
+}
+
+function compare(left: string, right: string) {
+    const leftParts = left.split(".").map(Number)
+    const rightParts = right.split(".").map(Number)
+
+    for (let index = 0; index < 3; index++) {
+        const difference = leftParts[index] - rightParts[index]
+        if (difference) return difference
+    }
+
+    return 0
+}
+
+/**
+ * Why something could not be read from GitHub. When GitHub's rate limit is
+ * used up, the message says when it resets, so whoever reads it, the owner or
+ * an agent, knows when asking again can succeed.
+ */
+function unavailable(what: string, response: Response) {
+    const reason = `${what} could not be read (${response.status} ${response.statusText})`
+    const reset = Number(response.headers.get("x-ratelimit-reset"))
+    const limited = response.headers.get("x-ratelimit-remaining") === "0" && Number.isFinite(reset) && reset > 0
+
+    if (!limited) return new Error(reason)
+
+    const at = new Date(reset * 1_000)
+    const time = at.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
+    return new Error(`${reason}: GitHub's rate limit resets at ${time} (${at.toISOString()}); ask again after that with retry`)
+}
