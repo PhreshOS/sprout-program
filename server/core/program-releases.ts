@@ -215,7 +215,7 @@ type CatalogState =
 const repositoryPageSize = 100
 const maximumRepositoryPages = 1_000
 /** The first-run Programs are not offered: they install the others. */
-const installers = new Set(["setup", "sprout"])
+const installers = new Set(["sprout"])
 
 const githubHeaders = {
     Accept: "application/vnd.github+json",

@@ -16,7 +16,7 @@ test("program releases contract", async () => {
 
           return Response.json([
               { name: "phresh-program", archived: false, fork: false },
-              { name: "setup-program", archived: false, fork: false },
+              { name: "retired-program", archived: true, fork: false },
               { name: "sprout-program", archived: false, fork: false },
               { name: "system", archived: false, fork: false }
           ])

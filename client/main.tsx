@@ -1,6 +1,6 @@
 import { ContextProvider, DesktopProvider, SystemProvider, useClientMemory, useDesktopPreferences, useSystemAppearance } from "@phreshos/react"
 import { context, desktop, system } from "@phreshos/client"
-import { ProgressBar, Readiness, resolveRadius, UIProvider, useAppearance, usePreferences, useThemedValue } from "@phreshos/react-ui"
+import { DocumentTheme, ProgressBar, Readiness, resolveRadius, UIProvider, useAppearance, usePreferences, useThemedValue } from "@phreshos/react-ui"
 import { StrictMode, useLayoutEffect } from "react"
 import client from "react-dom/client"
 import Sprout, { type Step } from "./sprout"
@@ -19,13 +19,8 @@ client.createRoot(document.getElementById("sprout")!).render(<StrictMode>
 function Themed() {
     const preferences = useDesktopPreferences()
 
-    // The page's color scheme follows the Desktop's theme. When they differ, the
-    // browser paints this frame opaque instead of letting the surface behind it show.
-    useLayoutEffect(() => {
-        document.documentElement.style.colorScheme = preferences.theme
-    }, [preferences.theme])
-
     return <UIProvider appearance={useSystemAppearance()} preferences={preferences}>
+        <DocumentTheme />
         <Page />
     </UIProvider>
 }
