@@ -1,9 +1,11 @@
 import { ContextProvider, DesktopProvider, SystemProvider, useClientMemory, useDesktopPreferences, useSystemAppearance } from "@phreshos/react"
 import { context, desktop, system } from "@phreshos/client"
 import { DocumentTheme, ProgressBar, Readiness, resolveRadius, UIProvider, useAppearance, usePreferences, useThemedValue } from "@phreshos/react-ui"
-import { StrictMode, useLayoutEffect } from "react"
+import { StrictMode, useEffect, useLayoutEffect, useState } from "react"
 import client from "react-dom/client"
 import Sprout, { type Step } from "./sprout"
+import Clock from "./clock"
+import { useClockPlacement } from "./clock-placement"
 import "./style.css"
 
 client.createRoot(document.getElementById("sprout")!).render(<StrictMode>
@@ -18,11 +20,30 @@ client.createRoot(document.getElementById("sprout")!).render(<StrictMode>
 
 function Themed() {
     const preferences = useDesktopPreferences()
+    const view = useView()
 
     return <UIProvider appearance={useSystemAppearance()} preferences={preferences}>
         <DocumentTheme />
-        <Page />
+        {view === undefined ? null : view.view === "clock" ? <ClockPage startedAt={view.startedAt} expiresAt={view.expiresAt} /> : <Page />}
     </UIProvider>
+}
+
+/** What this Process of Sprout shows, from the options it was created with: Sprout itself, or the demo's clock. */
+function useView() {
+    const [view, setView] = useState<Readonly<Record<string, string>>>()
+    useEffect(() => {
+        void context.process().then(process => process.options()).then(setView)
+    }, [])
+    return view
+}
+
+/** The demo's clock, in its place behind the Windows. */
+function ClockPage({ startedAt, expiresAt }: Readonly<{ startedAt?: string, expiresAt?: string }>) {
+    useClockPlacement()
+    const appearance = useAppearance()
+    const { foreground } = useThemedValue(appearance.colors)
+    if (!startedAt || !expiresAt) return null
+    return <div className="page" style={{ color: foreground }}><Clock startedAt={Date.parse(startedAt)} expiresAt={Date.parse(expiresAt)} /></div>
 }
 
 /** Sprout's text takes the Appearance text color of the current theme. */

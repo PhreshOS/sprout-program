@@ -1,6 +1,7 @@
 import { useContext } from "@phreshos/react"
 import { usePreferences, type AppearanceTransaction } from "@phreshos/react-ui"
 import { createContext, useContext as useReactContext, useEffect, useRef, useState, type CSSProperties } from "react"
+import { startClock, type Demo } from "./demo"
 
 /** How Sprout ended: the owner kept the System empty, or planted what they chose. */
 export type Finish = "kept fresh" | "planted"
@@ -49,7 +50,8 @@ export const departure: AppearanceTransaction = { duration: 1100, easing: [0.45,
 /**
  * Sprout's ending. Its end is recorded first, so Sprout does not start again
  * even if the owner leaves mid-way. The farewell holds a moment and fades;
- * then Sprout takes its own Surface away and its Process exits. The Desktop
+ * then Sprout takes its own Surface away and its Process exits, leaving the
+ * demo's clock behind on a demo machine. The Desktop
  * does not shape a Program's ending in the over layer, so Sprout does.
  */
 export function Farewell({ finish, leave }: Readonly<{ finish: Finish, leave: (animated: boolean) => Promise<void> }>) {
@@ -70,6 +72,9 @@ export function Farewell({ finish, leave }: Readonly<{ finish: Finish, leave: (a
             setFadingOut(true)
             await wait(departure.duration)
             await leaving.current(animations)
+            // On a demo machine, the clock takes Sprout's place, behind the Windows, once Sprout has gone.
+            const demo = await context.server.ask<Demo | null>("demo").catch(() => null)
+            if (demo) await startClock(program, demo).catch(() => undefined)
             await (await context.process()).exit()
         })()
         return () => { current = false }

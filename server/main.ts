@@ -1,7 +1,11 @@
 import { context, system } from "@phreshos/server"
 import { z } from "zod"
+import { readFile } from "node:fs/promises"
 import ProgramInstaller from "./core/program-installer"
 import ProgramReleases from "./core/program-releases"
+
+/** Where a demo machine records its lifetime. */
+const demoFile = "/etc/phreshos/demo.json"
 
 const releases = new ProgramReleases()
 // The planting lives here, on the Server, so every browser showing Sprout follows the same one.
@@ -22,3 +26,18 @@ context.answer("planting", () => installer.snapshot())
 
 /** Plants the chosen Programs, returning the planting as it starts. */
 context.answer("plant", async ({ payload }) => installer.start(plantRequest.parse(payload).programs))
+
+/**
+ * Whether this System runs on a demo machine, and its lifetime: the machine it runs on writes it
+ * to a file when it boots. On any other machine there is no file, and the answer is nothing.
+ */
+context.answer("demo", async () => {
+    try {
+        const { startedAt, expiresAt } = JSON.parse(await readFile(demoFile, "utf8")) as Record<string, unknown>
+        if (typeof startedAt !== "string" || typeof expiresAt !== "string" || Number.isNaN(Date.parse(startedAt)) || Number.isNaN(Date.parse(expiresAt))) return null
+        return { startedAt, expiresAt }
+    }
+    catch {
+        return null
+    }
+})

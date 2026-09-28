@@ -251,3 +251,20 @@ body {
     translate: 0 -6px;
     filter: blur(2px);
 }
+
+/* The demo's clock: a small card behind the Windows. */
+.clock {
+    box-sizing: border-box;
+    height: 100%;
+    padding: 1.25em 1.4em;
+}
+
+/* The time itself speaks in the display font, its digits in fixed widths so it does not jitter. */
+.clock-time {
+    font-family: "Fraunces Variable", Georgia, serif;
+    font-size: 2.75em;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+}

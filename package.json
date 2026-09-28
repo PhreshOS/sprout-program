@@ -1,7 +1,7 @@
 {
     "name": "sprout-program",
     "private": true,
-  "version": "0.1.3",
+  "version": "0.1.4",
     "description": "The first welcome to PhreshOS: plant your first programs, or keep it fresh.",
     "type": "module",
     "scripts": {
