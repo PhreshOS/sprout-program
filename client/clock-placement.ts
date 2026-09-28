@@ -1,6 +1,12 @@
 import { useContext, useDesktopViewport, useSystemAppearance } from "@phreshos/react"
 import { useEffect, useRef } from "react"
 
+/** How long the clock waits, once ready, before it appears, in milliseconds. */
+const settling = 700
+
+/** The clock's slow entrance. */
+const appearance = { duration: 1400, easing: [0.22, 1, 0.36, 1] as const }
+
 /**
  * The demo's clock sits behind the Windows, mirroring the Taskbar's Sign out across the Desktop:
  * on the edge facing the Taskbar, at the end where Sign out is, a little further in than the
@@ -34,8 +40,12 @@ export function useClockPlacement() {
         void (async () => {
             presentation.setInteractive(false)
             await presentation.setGeometry({ x: geometry.x + (width - start.width) / 2, y: geometry.y + (height - start.height) / 2, ...start })
-            await presentation.setSurface(true)
-            await presentation.transaction().setGeometry(geometry)
+            // The clock appears only once its words and digits have settled, a moment after Sprout has
+            // gone, so it seems to grow there rather than arrive; and it grows in slowly, like the garden.
+            await document.fonts.ready
+            await new Promise(resolve => setTimeout(resolve, settling))
+            const growing = presentation.transaction(appearance)
+            await Promise.all([growing.setSurface(true), growing.setGeometry(geometry)])
         })()
     }, [presentation, size.width, size.height, spacing, taskbar.position])
 }

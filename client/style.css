@@ -252,11 +252,25 @@ body {
     filter: blur(2px);
 }
 
-/* The demo's clock: a small card behind the Windows. */
+/* The demo's clock: a small card behind the Windows. Its words fade in with the Surface that
+   grows behind them (see clock-placement.ts), a little after it starts. */
+@keyframes clock-arrive {
+    from {
+        opacity: 0;
+    }
+}
+
 .clock {
     box-sizing: border-box;
     height: 100%;
     padding: 1.25em 1.4em;
+    animation: clock-arrive 1400ms cubic-bezier(0.22, 1, 0.36, 1) 900ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .clock {
+        animation: none;
+    }
 }
 
 /* The time itself speaks in the display font, its digits in fixed widths so it does not jitter. */
