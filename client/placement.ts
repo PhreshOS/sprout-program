@@ -32,7 +32,8 @@ export function usePlacement() {
         }
         const width = Math.min(preferred.width, area.width)
         const height = Math.min(preferred.height, area.height)
-        const center = { x: area.x + area.width / 2, y: area.y + area.height / 2 }
+        // Positions count from the Desktop's center, so the area's center is measured from it too.
+        const center = { x: area.x + area.width / 2 - size.width / 2, y: area.y + area.height / 2 - size.height / 2 }
         const geometry = { x: center.x - width / 2, y: center.y - height / 2, width, height }
         current.current = geometry
 
