@@ -41,3 +41,14 @@ context.answer("demo", async () => {
         return null
     }
 })
+
+/**
+ * Until the owner has finished with it, Sprout starts with the System, so a System started again
+ * before then still greets its owner; a demo machine, started from an image, greets every visitor
+ * this way. Sprout's farewell ends this: it records that Sprout is finished and changes the startup.
+ * Every Process of Sprout runs this Server, the demo's clock too, and all of them find it finished.
+ */
+void (async () => {
+    const program = await context.program()
+    if (await program.store.get("finished") === undefined) await program.startup.enable()
+})().catch(error => console.error("Sprout could not start with the System:", error))

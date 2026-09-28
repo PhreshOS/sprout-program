@@ -72,9 +72,11 @@ export function Farewell({ finish, leave }: Readonly<{ finish: Finish, leave: (a
             setFadingOut(true)
             await wait(departure.duration)
             await leaving.current(animations)
-            // On a demo machine, the clock takes Sprout's place, behind the Windows, once Sprout has gone.
+            // Sprout no longer starts with the System. On a demo machine, the clock takes its place,
+            // behind the Windows, once Sprout has gone.
             const demo = await context.server.ask<Demo | null>("demo").catch(() => null)
             if (demo) await startClock(program, demo).catch(() => undefined)
+            else await program.startup.disable().catch(() => undefined)
             await (await context.process()).exit()
         })()
         return () => { current = false }
