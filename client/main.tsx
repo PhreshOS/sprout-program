@@ -1,6 +1,6 @@
 import { ContextProvider, DesktopProvider, SystemProvider, useClientMemory, useDesktopPreferences, useSystemAppearance } from "@phreshos/react"
 import { context, desktop, system } from "@phreshos/client"
-import { DocumentTheme, ProgressBar, Readiness, resolveRadius, UIProvider, useAppearance, usePreferences, useThemedValue } from "@phreshos/react-ui"
+import { DocumentTheme, Readiness, resolveRadius, Spinner, UIProvider, useAppearance, usePreferences, useThemedValue } from "@phreshos/react-ui"
 import { StrictMode, useEffect, useLayoutEffect, useState } from "react"
 import client from "react-dom/client"
 import Sprout, { type Step } from "./sprout"
@@ -74,9 +74,7 @@ function Page() {
 /** The moment Sprout waits before the welcome, after its state has arrived, in milliseconds. */
 const opening = 1500
 
-/** A moving bar while Sprout opens. It measures nothing, so it shows no value. */
+/** A Spinner while Sprout opens: a short wait for the state it opens with. */
 function Opening() {
-    return <main className="preparing">
-        <div className="preparing-bar"><ProgressBar aria-label="Opening Sprout" indeterminate /></div>
-    </main>
+    return <main className="preparing"><Spinner label="Opening Sprout" /></main>
 }

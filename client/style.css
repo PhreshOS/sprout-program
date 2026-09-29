@@ -83,10 +83,6 @@ body {
     height: 100%;
 }
 
-.preparing-bar {
-    width: 36%;
-}
-
 .step {
     display: grid;
     /* One row of the full height, so a step's own height can be a share of it. */
