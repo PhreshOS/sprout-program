@@ -20,7 +20,7 @@ export default function Sprout({ step: [stored, setStep] }: Readonly<{ step: Ret
     const [ending, setEnding] = useState<Finish>()
     const step = stored as Step | undefined
     // Everything the steps open with is read here, once, so moving between steps never waits again.
-    const theme = useClientMemory("theme", "system")
+    const theme = useClientMemory("theme", "desktop")
     const selection = useSelection()
     const planting = usePlanting()
     const font = useFarewellFont()
@@ -156,10 +156,10 @@ const sizes = ["0.9", "1", "1.1"] as const
 function Personalize({ theme: [remembered, setTheme], onContinue }: Readonly<{ theme: ReturnType<typeof useClientMemory<string>>, onContinue: () => void }>) {
     const desktop = useDesktop()
     const preferences = useDesktopPreferences()
-    // The effective theme cannot tell a chosen theme from one that follows the system, so the choice is
+    // The effective theme cannot tell a chosen theme from one that follows the Desktop, so the choice is
     // remembered. Memory is shared by every browser showing this run while preferences belong to each one,
     // so a remembered choice that disagrees with this Desktop's theme gives way to the theme it shows.
-    const theme = remembered === "system" || remembered === preferences.theme ? remembered : preferences.theme
+    const theme = remembered === "desktop" || remembered === preferences.theme ? remembered : preferences.theme
     const size = sizes.find(value => Number(value) === preferences.scale)
 
     return <main className="step">
@@ -175,14 +175,14 @@ function Personalize({ theme: [remembered, setTheme], onContinue }: Readonly<{ t
                 </Select>
                 <SegmentedControl label="Theme" value={theme} onChange={value => {
                     void setTheme(value)
-                    void desktop.preferences.update({ theme: value === "system" ? "default" : value as "light" | "dark" })
+                    void desktop.preferences.update({ theme: value === "desktop" ? "desktop" : value as "light" | "dark" })
                 }}>
                     <SegmentedControl.Item id="light">Light</SegmentedControl.Item>
-                    <SegmentedControl.Item id="system">Match system</SegmentedControl.Item>
+                    <SegmentedControl.Item id="desktop">Match device</SegmentedControl.Item>
                     <SegmentedControl.Item id="dark">Dark</SegmentedControl.Item>
                 </SegmentedControl>
                 <SegmentedControl label="Size" value={size} onChange={value => {
-                    void desktop.preferences.update({ scale: value === "1" ? "default" : Number(value) })
+                    void desktop.preferences.update({ scale: Number(value) })
                 }}>
                     <SegmentedControl.Item id="0.9">90%</SegmentedControl.Item>
                     <SegmentedControl.Item id="1">100%</SegmentedControl.Item>
