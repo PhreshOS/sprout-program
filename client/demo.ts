@@ -13,6 +13,6 @@ export const clockProcess = "clock"
  */
 export async function startClock(program: Program, demo: Demo) {
     const launch = { name: clockProcess, client: { layer: "under" as const }, options: { view: "clock", startedAt: demo.startedAt, expiresAt: demo.expiresAt } }
-    await program.startup.enable(launch)
+    await program.startup.set(launch)
     await program.findOrCreateProcess(launch)
 }

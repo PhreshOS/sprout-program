@@ -50,5 +50,5 @@ context.answer("demo", async () => {
  */
 void (async () => {
     const program = await context.program()
-    if (await program.store.get("finished") === undefined) await program.startup.enable()
+    if (await program.store.get("finished") === undefined) await program.startup.set()
 })().catch(error => console.error("Sprout could not start with the System:", error))

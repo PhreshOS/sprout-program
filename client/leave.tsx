@@ -76,7 +76,7 @@ export function Farewell({ finish, leave }: Readonly<{ finish: Finish, leave: (a
             // behind the Windows, once Sprout has gone.
             const demo = await context.server.ask<Demo | null>("demo").catch(() => null)
             if (demo) await startClock(program, demo).catch(() => undefined)
-            else await program.startup.disable().catch(() => undefined)
+            else await program.startup.remove().catch(() => undefined)
             await (await context.process()).exit()
         })()
         return () => { current = false }
