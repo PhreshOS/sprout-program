@@ -1,5 +1,5 @@
 import { useContext } from "@phreshos/react"
-import { usePreferences, type AppearanceTransaction } from "@phreshos/react-ui"
+import { usePreferences, type Transaction } from "@phreshos/react-ui"
 import { createContext, useContext as useReactContext, useEffect, useRef, useState, type CSSProperties } from "react"
 import { startClock, type Demo } from "./demo"
 
@@ -45,7 +45,7 @@ export function useFarewellFont() {
 const holding = 2400
 
 /** The calm pace of the ending: the words fade, then the Surface goes, both at this timing. */
-export const departure: AppearanceTransaction = { duration: 1100, easing: [0.45, 0, 0.25, 1] }
+export const departure: Transaction = { duration: 1100, easing: [0.45, 0, 0.25, 1] }
 
 /**
  * Sprout's ending. Its end is recorded first, so Sprout does not start again

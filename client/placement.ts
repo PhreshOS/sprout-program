@@ -9,7 +9,7 @@ const preferred = { width: 880, height: 600 } as const
  * Sprout floats in the `over` layer, where the Desktop does not manage it as a
  * Window: it centers itself in the space the Desktop leaves for Windows, asks
  * for the System surface behind it, and follows the Desktop's size at once. It
- * grows in with the Appearance timing only the first time it appears.
+ * grows in on the motion the Desktop derives, only the first time it appears.
  */
 export function usePlacement() {
     const { presentation } = useContext()
