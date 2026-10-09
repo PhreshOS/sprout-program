@@ -1,4 +1,4 @@
-import { ContextProvider, DesktopProvider, SystemProvider, useClientMemory, useDesktopPreferences, useSystemAppearance } from "@phreshos/react"
+import { ContextProvider, DesktopProvider, SystemProvider, useClientMemory, useResolvedDesktopPreferences, useSystemAppearance } from "@phreshos/react"
 import { context, desktop, system } from "@phreshos/client"
 import { DocumentTheme, Readiness, resolveRadius, Spinner, UIProvider, useAppearance, usePreferences, useThemedValue } from "@phreshos/react-ui"
 import { StrictMode, useEffect, useLayoutEffect, useState } from "react"
@@ -19,7 +19,7 @@ client.createRoot(document.getElementById("sprout")!).render(<StrictMode>
 </StrictMode>)
 
 function Themed() {
-    const preferences = useDesktopPreferences()
+    const preferences = useResolvedDesktopPreferences()
     const view = useView()
 
     return <UIProvider appearance={useSystemAppearance()} preferences={preferences}>

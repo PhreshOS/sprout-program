@@ -20,11 +20,10 @@ export default function Sprout({ step: [stored, setStep] }: Readonly<{ step: Ret
     const [ending, setEnding] = useState<Finish>()
     const step = stored as Step | undefined
     // Everything the steps open with is read here, once, so moving between steps never waits again.
-    const theme = useClientMemory("theme", "desktop")
     const selection = useSelection()
     const planting = usePlanting()
     const font = useFarewellFont()
-    useRequirement(step !== undefined && theme[0] !== undefined && selection.loaded && planting !== undefined && font)
+    useRequirement(step !== undefined && selection.loaded && planting !== undefined && font)
     // During development every reload starts from the welcome, so it can be reviewed again.
     const [begun, setBegun] = useState(false)
     // Nothing starts before Sprout has opened, so the welcome's scene plays in front of the owner.
@@ -42,7 +41,7 @@ export default function Sprout({ step: [stored, setStep] }: Readonly<{ step: Ret
                 void setStep("personalize")
             }} />
             : shown === "personalize"
-                ? <Personalize theme={theme} onContinue={() => void setStep("plant")} />
+                ? <Personalize onContinue={() => void setStep("plant")} />
                 : <Plant planting={planting} selection={selection} />}
     </StepTransition></FinishContext.Provider>
 }
@@ -153,13 +152,9 @@ const sizes = ["0.9", "1", "1.1"] as const
  * The few things the owner sees the System through, applied to the Desktop as
  * they are chosen so the whole Desktop previews them.
  */
-function Personalize({ theme: [remembered, setTheme], onContinue }: Readonly<{ theme: ReturnType<typeof useClientMemory<string>>, onContinue: () => void }>) {
+function Personalize({ onContinue }: Readonly<{ onContinue: () => void }>) {
     const desktop = useDesktop()
     const preferences = useDesktopPreferences()
-    // The effective theme cannot tell a chosen theme from one that follows the Desktop, so the choice is
-    // remembered. Memory is shared by every browser showing this run while preferences belong to each one,
-    // so a remembered choice that disagrees with this Desktop's theme gives way to the theme it shows.
-    const theme = remembered === "desktop" || remembered === preferences.theme ? remembered : preferences.theme
     const size = sizes.find(value => Number(value) === preferences.scale)
 
     return <main className="step">
@@ -173,12 +168,11 @@ function Personalize({ theme: [remembered, setTheme], onContinue }: Readonly<{ t
                 <Select label="Language" value="en">
                     <Select.Item id="en">English</Select.Item>
                 </Select>
-                <SegmentedControl label="Theme" value={theme} onChange={value => {
-                    void setTheme(value)
-                    void desktop.preferences.update({ theme: value === "desktop" ? "desktop" : value as "light" | "dark" })
+                <SegmentedControl label="Theme" value={preferences.theme} onChange={value => {
+                    void desktop.preferences.update({ theme: value as "light" | "dark" | "browser" })
                 }}>
                     <SegmentedControl.Item id="light">Light</SegmentedControl.Item>
-                    <SegmentedControl.Item id="desktop">Match device</SegmentedControl.Item>
+                    <SegmentedControl.Item id="browser">Match device</SegmentedControl.Item>
                     <SegmentedControl.Item id="dark">Dark</SegmentedControl.Item>
                 </SegmentedControl>
                 <SegmentedControl label="Size" value={size} onChange={value => {
