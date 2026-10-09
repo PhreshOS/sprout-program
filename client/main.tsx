@@ -32,7 +32,7 @@ function Themed() {
 function useView() {
     const [view, setView] = useState<Readonly<Record<string, string>>>()
     useEffect(() => {
-        void context.process().then(process => process.options()).then(setView)
+        void context.options().then(setView)
     }, [])
     return view
 }
