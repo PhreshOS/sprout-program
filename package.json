@@ -1,7 +1,7 @@
 {
   "name": "sprout-program",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "The first welcome to PhreshOS: plant your first programs, or keep it fresh.",
   "type": "module",
   "scripts": {
@@ -23,7 +23,7 @@
     "@phreshos/client": "^0.2.0",
     "@phreshos/core": "^0.2.0",
     "@phreshos/react": "^0.2.0",
-    "@phreshos/react-ui": "^0.2.0",
+    "@phreshos/react-ui": "^0.2.1",
     "@phreshos/server": "^0.2.0",
     "adm-zip": "^0.6.0",
     "react": "^19.2.8",
