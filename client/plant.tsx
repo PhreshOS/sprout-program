@@ -110,7 +110,7 @@ function Choosing({ releases, selection: { chosen: selection, select } }: Readon
 
     return <ScrollArea className="plant-list">
         {/* The space around the content scrolls with it, so the scrollbar stays at the Surface's edge. */}
-        <GridList aria-label="Programs" selectionMode="multiple" color="default" itemWidth="15em" style={{ padding: "1.25em" }} value={[...selection]}
+        <GridList aria-label="Programs" selectionMode="multiple" itemWidth="15em" style={{ padding: "1.25em" }} value={[...selection]}
             onChange={value => select(value === "all" ? releases.map(release => release.identity) : value)}>
             {sections(releases).map(({ category, members }) => {
                 const identities = members.map(member => member.identity)
