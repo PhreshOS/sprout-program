@@ -263,7 +263,7 @@ const invitation = `PhreshOS is running on this machine, and its first-run progr
 function AgentInvitation() {
     return <Dialog>
         <Dialog.Trigger><Bot aria-hidden="true" />Plant with your agent</Dialog.Trigger>
-        <Dialog.Backdrop dismissable variant="blur">
+        <Dialog.Backdrop dismissable>
             <Dialog.Content>
                 <Dialog.Header>
                     <Dialog.Title>Plant with your agent</Dialog.Title>
