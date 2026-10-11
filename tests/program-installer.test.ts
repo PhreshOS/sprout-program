@@ -15,9 +15,9 @@ test("program installer contract", async () => {
 
   const programs = {
       async find(identity: string) {
-          if (identity === "existing") return { installed: async () => true }
+          if (identity === "existing") return { installedAt: async () => new Date("2026-10-10T00:00:00.000Z") }
           // Uninstalled, but still known in this run: planting takes its identity again.
-          if (identity === "alpha") return { installed: async () => false }
+          if (identity === "alpha") return { installedAt: async () => null }
           return null
       },
       async forceCreate(path: string) {

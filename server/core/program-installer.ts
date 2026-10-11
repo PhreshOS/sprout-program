@@ -28,7 +28,7 @@ export type InstallationSnapshot = Readonly<{
 
 type ProgramCatalog = Readonly<{ all: () => Promise<readonly ProgramRelease[]> }>
 type ProgramRegistry = Readonly<{
-    find: (identity: string) => Promise<Pick<Program, "installed"> | null>
+    find: (identity: string) => Promise<Pick<Program, "installedAt"> | null>
     forceCreate: (source: string) => Promise<Pick<Program, "install" | "forget">>
 }>
 type PackagePreparer = (release: ProgramRelease, verifying: () => void) => Promise<PreparedProgramPackage>
@@ -84,7 +84,7 @@ export default class ProgramInstaller {
     private async install(release: ProgramRelease) {
         const existing = await this.programs.find(release.identity)
 
-        if (existing && await existing.installed()) {
+        if (existing && await existing.installedAt() !== null) {
             this.update(release.identity, "already-installed")
             return
         }
@@ -94,7 +94,7 @@ export default class ProgramInstaller {
         const prepared = await this.prepare(release, () => this.update(release.identity, "verifying"))
 
         try {
-            // Planting takes the identity even when an uninstalled Program still holds it in this run.
+            // Planting takes the identity even when a Program run from a project holds it.
             const program = await this.programs.forceCreate(prepared.program)
 
             try {
