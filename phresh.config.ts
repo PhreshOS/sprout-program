@@ -4,7 +4,7 @@ export default defineConfig({
     identity: "sprout",
     name: "Sprout",
     description: "The first welcome to PhreshOS: plant your first programs, or keep it fresh.",
-  version: "0.8.1",
+  version: "0.8.2",
     // Installing Sprout starts it: it is the first thing a new System shows.
     installLaunch: true,
     icon: "icon.png",
